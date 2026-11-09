@@ -23,8 +23,8 @@ async function runTest() {
     page1.on("pageerror", (e) => console.log("[P1 ERROR]", e.message));
     page2.on("pageerror", (e) => console.log("[P2 ERROR]", e.message));
 
-    console.log("1. Tab 1 (Host bHARGAV): Visiting Landing Page...");
-    await page1.goto("http://localhost:5173", { waitUntil: "domcontentloaded" });
+    console.log("1. Tab 1 (Host bHARGAV): Visiting Live Vercel Landing Page...");
+    await page1.goto("https://dist-ten-mu-79.vercel.app", { waitUntil: "domcontentloaded" });
     await page1.evaluate(() => {
       localStorage.setItem("sketchroom_mode", "browser");
     });
@@ -61,9 +61,9 @@ async function runTest() {
     const tab1LobbyText = await page1.evaluate(() => document.body.innerText);
     console.log(`Tab 1 Initial Lobby Text has bHARGAV: ${tab1LobbyText.includes("bHARGAV")}`);
 
-    console.log(`3. Tab 2 (Player pUKU): Joining room ${roomCode}...`);
+    console.log(`3. Tab 2 (Player pUKU): Joining room ${roomCode} on Vercel...`);
     // Direct visit to /room/:code in Tab 2
-    await page2.goto(`http://localhost:5173/room/${roomCode}`, { waitUntil: "domcontentloaded" });
+    await page2.goto(`https://dist-ten-mu-79.vercel.app/room/${roomCode}`, { waitUntil: "domcontentloaded" });
     await page2.evaluate(() => {
       localStorage.setItem("sketchroom_mode", "browser");
     });

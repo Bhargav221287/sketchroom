@@ -24,3 +24,4 @@ We upgraded the In-Browser Virtual Engine into an authoritative, synchronized mu
 3. **Action & Event Forwarding**:
    - Any drawing, guesses, chat messages, or ready toggles from non-host tabs are forwarded to the Host instance, validated server-side, and broadcast to all tabs in real-time.
    - When Tab 1 clicks **`Start Game`**, both tabs transition simultaneously to the game phase.
+

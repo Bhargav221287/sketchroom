@@ -21,6 +21,7 @@ import {
   TURN_SUMMARY_DURATION_SECONDS,
 } from "@sketchroom/shared";
 import wordsData from "@sketchroom/shared/words.json";
+import Peer, { DataConnection } from "peerjs";
 
 const STORAGE_PREFIX = "sketchroom_vroom_";
 
@@ -79,7 +80,7 @@ const myTabId =
       })()
     : "tab-server";
 
-// In-Browser Virtual Server that runs client-side with full multi-tab synchronization via BroadcastChannel & localStorage
+// Authoritative In-Browser & WebRTC P2P Virtual Server
 export class VirtualServer {
   public roomCode: string = "";
   public hostId: string = "";
@@ -122,6 +123,12 @@ export class VirtualServer {
   private channel: BroadcastChannel | null = null;
   public isHostInstance: boolean = true;
 
+  // WebRTC P2P connections (works across Incognito, different browsers, and devices)
+  private hostPeer: Peer | null = null;
+  private clientPeer: Peer | null = null;
+  private p2pConnections: Map<string, DataConnection> = new Map();
+  private clientP2PConn: DataConnection | null = null;
+
   constructor() {
     if (typeof window !== "undefined" && "BroadcastChannel" in window) {
       try {
@@ -150,7 +157,6 @@ export class VirtualServer {
         if (this.roomCode && this.isHostInstance) {
           const activePlayers = Array.from(this.players.values()).filter((p) => p.id !== this.hostId);
           if (activePlayers.length > 0) {
-            // Migrate host to next player
             const nextHost = activePlayers[0];
             if (this.channel) {
               try {
@@ -163,6 +169,10 @@ export class VirtualServer {
             }
           }
         }
+        try {
+          this.hostPeer?.destroy();
+          this.clientPeer?.destroy();
+        } catch {}
       });
     }
   }
@@ -190,35 +200,60 @@ export class VirtualServer {
       });
     }
 
-    // Broadcast state updates to other browser tabs
+    // 1. Broadcast to other browser tabs on same device
     if (this.channel && this.isHostInstance) {
       try {
         this.channel.postMessage({ type: "BROADCAST_EVENT", event, data });
       } catch {}
+    }
+
+    // 2. Broadcast to WebRTC P2P peers (Incognito, mobile phones, different browsers)
+    if (this.isHostInstance && this.p2pConnections.size > 0) {
+      const p2pMsg = { type: "BROADCAST_EVENT", event, data };
+      this.p2pConnections.forEach((conn) => {
+        try {
+          if (conn.open) {
+            conn.send(p2pMsg);
+          }
+        } catch {}
+      });
     }
   }
 
   public forwardClientAction(action: string, payload: any) {
     if (this.isHostInstance) {
       this.handleClientAction(action, payload);
-    } else if (this.channel) {
-      try {
-        this.channel.postMessage({
-          type: "CLIENT_ACTION",
-          roomCode: this.roomCode,
-          action,
-          payload,
-        });
-      } catch (err) {
-        console.error("[VirtualServer] Failed to post CLIENT_ACTION:", err);
+    } else {
+      // 1. Send via BroadcastChannel
+      if (this.channel) {
+        try {
+          this.channel.postMessage({
+            type: "CLIENT_ACTION",
+            roomCode: this.roomCode,
+            action,
+            payload,
+          });
+        } catch (err) {}
+      }
+
+      // 2. Send via WebRTC P2P DataChannel
+      if (this.clientP2PConn && this.clientP2PConn.open) {
+        try {
+          this.clientP2PConn.send({
+            type: "CLIENT_ACTION",
+            roomCode: this.roomCode,
+            action,
+            payload,
+          });
+        } catch (err) {}
       }
     }
   }
 
-  private handleNetworkMessage(msg: any) {
+  public handleNetworkMessage(msg: any) {
     if (!msg) return;
 
-    // Join request from another tab
+    // Join request from client (Tab or WebRTC Peer)
     if (msg.type === "CLIENT_JOIN" && msg.roomCode === this.roomCode) {
       const p: Player = msg.player;
       if (!this.players.has(p.id)) {
@@ -232,13 +267,13 @@ export class VirtualServer {
       return;
     }
 
-    // Client action sent to Host tab
+    // Client action sent to Host
     if (msg.type === "CLIENT_ACTION" && msg.roomCode === this.roomCode && this.isHostInstance) {
       this.handleClientAction(msg.action, msg.payload);
       return;
     }
 
-    // Broadcast event received from Host tab
+    // Broadcast event received from Host
     if (msg.type === "BROADCAST_EVENT" && !this.isHostInstance) {
       if (msg.event === "room:state" && msg.data) {
         this.syncFromState(msg.data);
@@ -265,6 +300,7 @@ export class VirtualServer {
         this.hostTabId = myTabId;
         const me = this.players.get(this.hostId);
         if (me) me.isHost = true;
+        this.initP2PHost(this.roomCode);
         this.persistToStorage();
         this.emitRoomState();
       }
@@ -332,7 +368,6 @@ export class VirtualServer {
     this.opLog = data.opLog || [];
     this.snapshots = data.snapshots || [];
 
-    // Sync players map
     this.players.clear();
     for (const p of data.players) {
       this.players.set(p.id, p);
@@ -352,7 +387,6 @@ export class VirtualServer {
     this.timeLeftSeconds = state.timeLeftSeconds || 0;
     this.totalTimeSeconds = state.totalTimeSeconds || 0;
 
-    // Sync players
     this.players.clear();
     for (const p of state.players) {
       this.players.set(p.id, p);
@@ -380,6 +414,112 @@ export class VirtualServer {
       lastUpdated: Date.now(),
     };
     saveStorageRoom(data);
+  }
+
+  // Initialize Host WebRTC P2P listener
+  public initP2PHost(roomCode: string) {
+    if (typeof window === "undefined") return;
+    try {
+      if (this.hostPeer) {
+        try {
+          this.hostPeer.destroy();
+        } catch {}
+      }
+      const hostPeerId = `skr-v2-${roomCode.toLowerCase()}`;
+      this.hostPeer = new Peer(hostPeerId, { debug: 0 });
+
+      this.hostPeer.on("connection", (conn) => {
+        this.p2pConnections.set(conn.peer, conn);
+
+        conn.on("open", () => {
+          // Immediately send current room state to newly connected peer
+          conn.send({
+            type: "BROADCAST_EVENT",
+            event: "room:state",
+            data: this.getRoomState(),
+          });
+        });
+
+        conn.on("data", (data: any) => {
+          this.handleNetworkMessage(data);
+        });
+
+        conn.on("close", () => {
+          this.p2pConnections.delete(conn.peer);
+        });
+
+        conn.on("error", () => {
+          this.p2pConnections.delete(conn.peer);
+        });
+      });
+    } catch {}
+  }
+
+  // Connect to Host as WebRTC P2P Client (for Incognito or cross-device)
+  public async connectP2PClient(roomCode: string, newPlayer: Player): Promise<boolean> {
+    if (typeof window === "undefined") return false;
+    return new Promise((resolve) => {
+      try {
+        if (this.clientPeer) {
+          try {
+            this.clientPeer.destroy();
+          } catch {}
+        }
+
+        const clientPeer = new Peer();
+        this.clientPeer = clientPeer;
+        const hostPeerId = `skr-v2-${roomCode.toLowerCase()}`;
+
+        let resolved = false;
+        const timer = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            resolve(false);
+          }
+        }, 3500);
+
+        clientPeer.on("open", () => {
+          const conn = clientPeer.connect(hostPeerId, { reliable: true });
+          this.clientP2PConn = conn;
+
+          conn.on("open", () => {
+            conn.send({
+              type: "CLIENT_JOIN",
+              roomCode,
+              player: newPlayer,
+              tabId: myTabId,
+            });
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(timer);
+              resolve(true);
+            }
+          });
+
+          conn.on("data", (data: any) => {
+            this.handleNetworkMessage(data);
+          });
+
+          conn.on("error", () => {
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(timer);
+              resolve(false);
+            }
+          });
+        });
+
+        clientPeer.on("error", () => {
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timer);
+            resolve(false);
+          }
+        });
+      } catch {
+        resolve(false);
+      }
+    });
   }
 
   public createRoom(
@@ -420,6 +560,7 @@ export class VirtualServer {
 
     this.players.set(playerId, hostPlayer);
     this.persistToStorage();
+    this.initP2PHost(this.roomCode);
     this.emitRoomState();
 
     if (this.channel) {
@@ -445,19 +586,17 @@ export class VirtualServer {
     const playerId = `p-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const sessionToken = `sess-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
-    // Check if room exists in localStorage
+    // 1. Check if room exists in localStorage (same browser profile)
     const stored = getStorageRoom(code);
 
     if (stored) {
       this.roomCode = code;
       this.hostId = stored.hostId;
       this.hostTabId = stored.hostTabId;
-      // Is this tab the host tab?
       this.isHostInstance = stored.hostTabId === myTabId;
       this.phase = stored.phase;
       this.settings = stored.settings;
 
-      // Populate players from storage
       this.players.clear();
       for (const p of stored.players) {
         this.players.set(p.id, p);
@@ -481,7 +620,7 @@ export class VirtualServer {
         avatarString: serializeAvatar(avatar),
         score: 0,
         roundScore: 0,
-        isHost: false, // CRITICAL: NEVER HOST WHEN JOINING AN EXISTING ROOM!
+        isHost: false, // Strictly Guest
         isReady: false,
         hasGuessed: false,
         isDisconnected: false,
@@ -490,7 +629,9 @@ export class VirtualServer {
       this.players.set(playerId, newPlayer);
       this.persistToStorage();
 
-      // Broadcast join to Host tab and other tabs
+      // Connect WebRTC P2P as well for cross-channel backup
+      this.connectP2PClient(code, newPlayer);
+
       if (this.channel) {
         try {
           this.channel.postMessage({
@@ -514,51 +655,38 @@ export class VirtualServer {
       };
     }
 
-    // Room already held in memory
-    if (this.roomCode === code && this.players.size > 0) {
-      const newPlayer: Player = {
-        id: playerId,
-        nickname,
-        avatar,
-        avatarString: serializeAvatar(avatar),
-        score: 0,
-        roundScore: 0,
-        isHost: false,
-        isReady: false,
-        hasGuessed: false,
-        isDisconnected: false,
-      };
-      this.players.set(playerId, newPlayer);
-      this.persistToStorage();
-      this.emit("player:joined", newPlayer);
-      this.emitRoomState();
-      return { success: true, roomCode: code, playerId, sessionToken, roomState: this.getRoomState() };
-    }
+    // 2. Room not in localStorage (Incognito tab, different browser, or mobile device):
+    // Register as a guest waiting for WebRTC P2P connection to Host
+    this.roomCode = code;
+    this.isHostInstance = false; // NEVER assume host when joining!
+    this.phase = "LOBBY";
 
-    // Room did not exist before: create it as initial host
-    const hostPlayer: Player = {
+    const newPlayer: Player = {
       id: playerId,
       nickname,
       avatar,
       avatarString: serializeAvatar(avatar),
       score: 0,
       roundScore: 0,
-      isHost: true,
-      isReady: true,
+      isHost: false,
+      isReady: false,
       hasGuessed: false,
       isDisconnected: false,
     };
-    this.roomCode = code;
-    this.hostId = playerId;
-    this.hostTabId = myTabId;
-    this.isHostInstance = true;
-    this.phase = "LOBBY";
-    this.players.clear();
-    this.players.set(playerId, hostPlayer);
-    this.persistToStorage();
-    this.emitRoomState();
 
-    return { success: true, roomCode: code, playerId, sessionToken, roomState: this.getRoomState() };
+    this.players.clear();
+    this.players.set(playerId, newPlayer);
+
+    // Attempt WebRTC P2P connection to Host peer
+    this.connectP2PClient(code, newPlayer);
+
+    return {
+      success: true,
+      roomCode: code,
+      playerId,
+      sessionToken,
+      roomState: this.getRoomState(),
+    };
   }
 
   public addBotPlayer(): Player | null {
