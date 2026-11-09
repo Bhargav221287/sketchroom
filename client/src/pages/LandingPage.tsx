@@ -300,7 +300,17 @@ export function LandingPage() {
 
       {/* Footer */}
       <footer className="relative z-10 w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between pt-6 text-xs text-text-muted border-t border-border/60 gap-3">
-        <span>© 2026 SketchRoom. Built with pure Canvas & WebSockets.</span>
+        <span>
+          © 2026 SketchRoom. Developed with ❤️ by{" "}
+          <a
+            href="https://github.com/Bhargav221287"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-primary hover:underline"
+          >
+            Bhargav
+          </a>
+        </span>
         <div className="flex items-center gap-4">
           <button onClick={() => setHowToPlayOpen(true)} className="hover:text-primary transition-colors">
             Game Rules

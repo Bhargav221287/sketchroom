@@ -2,6 +2,7 @@
   "name": "@sketchroom/shared",
   "version": "1.0.0",
   "type": "module",
+  "author": "Bhargav <bhargav159509@gmail.com> (https://github.com/Bhargav221287)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

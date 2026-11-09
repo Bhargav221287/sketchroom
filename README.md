@@ -183,6 +183,15 @@ To add more words:
 
 ---
 
+## 👨‍💻 Developer & Author
+
+- **Bhargav** ([@Bhargav221287](https://github.com/Bhargav221287))
+  - GitHub: [https://github.com/Bhargav221287](https://github.com/Bhargav221287)
+  - Repository: [https://github.com/Bhargav221287/sketchroom](https://github.com/Bhargav221287/sketchroom)
+
+---
+
 ## 📄 License
 
-MIT © 2026 SketchRoom Contributors
+MIT © 2026 Bhargav ([@Bhargav221287](https://github.com/Bhargav221287))
+

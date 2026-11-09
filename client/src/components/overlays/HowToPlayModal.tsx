@@ -62,6 +62,18 @@ export function HowToPlayModal({ open, onOpenChange }: HowToPlayModalProps) {
             </div>
           ))}
         </div>
+
+        <div className="pt-3 text-center text-xs text-text-muted border-t border-border/60">
+          Developed with ❤️ by{" "}
+          <a
+            href="https://github.com/Bhargav221287"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-primary hover:underline"
+          >
+            Bhargav
+          </a>
+        </div>
       </DialogContent>
     </Dialog>
   );

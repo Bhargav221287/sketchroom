@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Realtime multiplayer drawing and guessing game",
+  "author": "Bhargav <bhargav159509@gmail.com> (https://github.com/Bhargav221287)",
   "workspaces": [
     "shared",
     "server",

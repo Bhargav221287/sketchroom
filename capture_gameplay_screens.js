@@ -147,3 +147,4 @@ run().catch((e) => {
   console.error("Error capturing gameplay screens:", e);
   process.exit(1);
 });
+

@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_L8Op6MUJadkfyIZNKrzECh4Q0FSE",
+  "orgId": "team_oRrk2SRIEDzIQvyrWgHweTla",
+  "projectName": "client",
+  "settings": {
+    "createdAt": 1794241079234,
+    "framework": "vite",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "26.x"
+  }
+}
