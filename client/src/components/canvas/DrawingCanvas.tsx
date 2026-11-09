@@ -403,3 +403,4 @@ export const DrawingCanvas = React.forwardRef<HTMLCanvasElement, DrawingCanvasPr
 );
 
 DrawingCanvas.displayName = "DrawingCanvas";
+

@@ -22,3 +22,4 @@ export const Toggle = React.forwardRef<
   </SwitchPrimitive.Root>
 ));
 Toggle.displayName = SwitchPrimitive.Root.displayName;
+

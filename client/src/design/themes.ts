@@ -48,3 +48,4 @@ export function applyTheme(accent: AccentTheme, isDark: boolean) {
     root.classList.remove("dark");
   }
 }
+

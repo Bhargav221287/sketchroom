@@ -6,9 +6,11 @@ import {
   DEFAULT_DRAW_TIME_SECONDS,
   DEFAULT_ROUNDS,
   GamePhase,
+  generateRandomAvatar,
   InterServerEvents,
   isCloseGuess,
   isExactGuess,
+  MAX_PLAYERS_PER_ROOM,
   MIN_PLAYERS_TO_START,
   Player,
   PodiumPlayer,
@@ -16,8 +18,10 @@ import {
   RoomSettings,
   RoomState,
   sanitizeChatMessage,
+  serializeAvatar,
   ServerToClientEvents,
   SocketData,
+  StrokeOp,
   TURN_SUMMARY_DURATION_SECONDS,
   TurnSnapshot,
   WORD_CHOICE_DURATION_SECONDS,
@@ -61,6 +65,7 @@ export class Room {
 
   // Phase Timers
   private activeTimerInterval: NodeJS.Timeout | null = null;
+  private botTimeouts: NodeJS.Timeout[] = [];
   public timeLeftSeconds: number = 0;
   public totalTimeSeconds: number = 0;
 
@@ -253,6 +258,48 @@ export class Room {
     this.emitRoomState();
   }
 
+  public addBotPlayer(): Player | null {
+    this.touch();
+    if (this.phase !== "LOBBY") return null;
+    if (this.players.size >= MAX_PLAYERS_PER_ROOM) return null;
+
+    const botNames = ["PicassoBot", "DoodleBot", "SketchyBot", "Artie", "Brushy", "PixelBot"];
+    const existing = new Set(Array.from(this.players.values()).map((p) => p.nickname));
+    const chosenName = botNames.find((n) => !existing.has(n)) || `Bot-${Math.floor(Math.random() * 900 + 100)}`;
+
+    const botId = `bot-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const botAvatar = generateRandomAvatar();
+
+    const botPlayer: Player = {
+      id: botId,
+      nickname: `🤖 ${chosenName}`,
+      avatar: botAvatar,
+      avatarString: serializeAvatar(botAvatar),
+      score: 0,
+      roundScore: 0,
+      isHost: false,
+      isReady: true,
+      hasGuessed: false,
+      isDisconnected: false,
+    };
+
+    this.players.set(botId, botPlayer);
+    this.broadcast("player:joined", botPlayer);
+    this.emitRoomState();
+    return botPlayer;
+  }
+
+  public removeBotPlayer(): void {
+    this.touch();
+    if (this.phase !== "LOBBY") return;
+    const bot = Array.from(this.players.values()).find((p) => p.id.startsWith("bot-"));
+    if (bot) {
+      this.players.delete(bot.id);
+      this.broadcast("player:left", { playerId: bot.id, newHostId: this.hostId });
+      this.emitRoomState();
+    }
+  }
+
   public startGame(): boolean {
     this.touch();
     const activePlayers = Array.from(this.players.values()).filter((p) => !p.isDisconnected);
@@ -355,6 +402,16 @@ export class Room {
 
     this.emitRoomState();
 
+    // If drawer is a bot, pick a word automatically after 1.5s
+    if (this.currentDrawerId.startsWith("bot-")) {
+      const t = setTimeout(() => {
+        if (this.phase === "WORD_CHOICE" && this.currentDrawerId?.startsWith("bot-")) {
+          this.chooseWord(0);
+        }
+      }, 1500);
+      this.botTimeouts.push(t);
+    }
+
     // 15-second countdown to pick a word
     this.activeTimerInterval = setInterval(() => {
       this.timeLeftSeconds--;
@@ -397,6 +454,13 @@ export class Room {
 
     this.emitRoomState();
 
+    // Bot automation: drawing or guessing
+    if (this.currentDrawerId?.startsWith("bot-")) {
+      this.scheduleBotDrawing();
+    } else {
+      this.scheduleBotGuesses();
+    }
+
     // Start drawing timer
     this.activeTimerInterval = setInterval(() => {
       this.timeLeftSeconds--;
@@ -418,11 +482,95 @@ export class Room {
     }, 1000);
   }
 
+  private scheduleBotDrawing(): void {
+    const strokes: Array<{ color: string; size: number; points: Array<{ x: number; y: number }> }> = [
+      // Face outline
+      {
+        color: "#3B82F6",
+        size: 8,
+        points: Array.from({ length: 17 }, (_, i) => {
+          const angle = (i / 16) * Math.PI * 2;
+          return { x: 0.5 + 0.25 * Math.cos(angle), y: 0.5 + 0.25 * Math.sin(angle) };
+        }),
+      },
+      // Left eye
+      {
+        color: "#1E293B",
+        size: 10,
+        points: [{ x: 0.42, y: 0.42 }, { x: 0.42, y: 0.43 }],
+      },
+      // Right eye
+      {
+        color: "#1E293B",
+        size: 10,
+        points: [{ x: 0.58, y: 0.42 }, { x: 0.58, y: 0.43 }],
+      },
+      // Smile
+      {
+        color: "#EF4444",
+        size: 6,
+        points: [
+          { x: 0.40, y: 0.55 },
+          { x: 0.45, y: 0.62 },
+          { x: 0.50, y: 0.64 },
+          { x: 0.55, y: 0.62 },
+          { x: 0.60, y: 0.55 },
+        ],
+      },
+    ];
+
+    strokes.forEach((s, idx) => {
+      const delay = (idx + 1) * 2000;
+      const t = setTimeout(() => {
+        if (this.phase !== "DRAWING" || !this.currentDrawerId?.startsWith("bot-")) return;
+        const op: StrokeOp = {
+          type: "stroke",
+          id: `bot-stroke-${Date.now()}-${idx}`,
+          tool: "brush",
+          color: s.color,
+          size: s.size,
+          opacity: 1,
+          points: s.points,
+        };
+        this.opLog.addOp(op);
+        this.broadcast("draw:op", { op });
+      }, delay);
+      this.botTimeouts.push(t);
+    });
+  }
+
+  private scheduleBotGuesses(): void {
+    const bots = Array.from(this.players.values()).filter(
+      (p) => p.id.startsWith("bot-") && p.id !== this.currentDrawerId
+    );
+    if (bots.length === 0 || !this.currentSecretWord) return;
+
+    bots.forEach((bot, botIdx) => {
+      // 1. Simulated chatter after 8-12 seconds
+      const chatterDelay = 8000 + botIdx * 3000;
+      const t1 = setTimeout(() => {
+        if (this.phase !== "DRAWING" || this.hasGuessedThisTurn.has(bot.id)) return;
+        const chatOptions = ["Hmm, what could that be?", "Nice drawing!", "Wait, let me guess...", "Is it something round?"];
+        const msg = chatOptions[Math.floor(Math.random() * chatOptions.length)];
+        this.broadcastChatMessage(bot, msg, "normal");
+      }, chatterDelay);
+      this.botTimeouts.push(t1);
+
+      // 2. Correct guess after 15-22 seconds
+      const correctDelay = 15000 + botIdx * 4000;
+      const t2 = setTimeout(() => {
+        if (this.phase !== "DRAWING" || this.hasGuessedThisTurn.has(bot.id) || !this.currentSecretWord) return;
+        this.handleGuess(bot.id, this.currentSecretWord);
+      }, correctDelay);
+      this.botTimeouts.push(t2);
+    });
+  }
+
   public handleGuess(playerId: string, rawText: string): void {
     this.touch();
     const player = this.players.get(playerId);
+    if (!player) return;
     const socket = this.sockets.get(playerId);
-    if (!player || !socket) return;
 
     const text = sanitizeChatMessage(rawText);
     if (!text) return;
@@ -476,8 +624,9 @@ export class Room {
 
     // Check close guess (edit distance = 1)
     if (this.phase === "DRAWING" && this.currentSecretWord && isCloseGuess(text, this.currentSecretWord)) {
-      socket.emit("chat:close_guess", { message: `"${text}" is super close!` });
-      // Do not broadcast close guess to others so word pattern is not leaked
+      if (socket) {
+        socket.emit("chat:close_guess", { message: `"${text}" is super close!` });
+      }
       return;
     }
 
@@ -628,6 +777,10 @@ export class Room {
       clearInterval(this.activeTimerInterval);
       this.activeTimerInterval = null;
     }
+    for (const t of this.botTimeouts) {
+      clearTimeout(t);
+    }
+    this.botTimeouts = [];
   }
 
   public cleanup(): void {
@@ -638,3 +791,4 @@ export class Room {
     this.disconnectTimers.clear();
   }
 }
+

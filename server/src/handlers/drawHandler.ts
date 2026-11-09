@@ -76,3 +76,4 @@ export function registerDrawHandlers(io: TypedServer, socket: TypedSocket) {
     socket.to(roomCode).emit("draw:remote_cursor", { x, y, drawerId: playerId });
   });
 }
+

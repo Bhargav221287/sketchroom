@@ -60,3 +60,4 @@ export function TurnSummaryModal({ isOpen, summary, timeLeft }: TurnSummaryModal
     </Dialog>
   );
 }
+

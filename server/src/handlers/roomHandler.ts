@@ -44,6 +44,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
       callback({
         success: true,
         roomCode: room.roomCode,
+        playerId,
         sessionToken,
       });
     } catch (err: any) {
@@ -134,6 +135,28 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
     room.removePlayer(targetPlayerId);
   });
 
+  // Add Bot Player (Host only)
+  socket.on("room:add_bot", () => {
+    const { roomCode, playerId } = socket.data;
+    if (!roomCode || !playerId) return;
+
+    const room = roomManager.getRoom(roomCode);
+    if (!room || room.hostId !== playerId) return;
+
+    room.addBotPlayer();
+  });
+
+  // Remove Bot Player (Host only)
+  socket.on("room:remove_bot", () => {
+    const { roomCode, playerId } = socket.data;
+    if (!roomCode || !playerId) return;
+
+    const room = roomManager.getRoom(roomCode);
+    if (!room || room.hostId !== playerId) return;
+
+    room.removeBotPlayer();
+  });
+
   // Update Settings (Host only)
   socket.on("room:update_settings", ({ settings }) => {
     const { roomCode, playerId } = socket.data;
@@ -167,3 +190,4 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
     }
   });
 }
+

@@ -18,7 +18,13 @@ export interface ClientToServerEvents {
       avatar: AvatarConfig;
       settings?: Partial<RoomSettings>;
     },
-    callback: (response: { success: boolean; roomCode?: string; error?: string; sessionToken?: string }) => void
+    callback: (response: {
+      success: boolean;
+      roomCode?: string;
+      playerId?: string;
+      sessionToken?: string;
+      error?: string;
+    }) => void
   ) => void;
 
   "room:join": (
@@ -34,6 +40,10 @@ export interface ClientToServerEvents {
   "room:leave": () => void;
 
   "room:kick": (payload: { targetPlayerId: string }) => void;
+
+  "room:add_bot": () => void;
+
+  "room:remove_bot": () => void;
 
   "room:update_settings": (payload: { settings: Partial<RoomSettings> }) => void;
 
@@ -128,3 +138,4 @@ export interface SocketData {
   nickname: string;
   sessionToken: string;
 }
+

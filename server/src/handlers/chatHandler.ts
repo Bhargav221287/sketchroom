@@ -41,3 +41,4 @@ export function registerChatHandlers(io: TypedServer, socket: TypedSocket) {
     room.handleGuess(playerId, text);
   });
 }
+

@@ -175,3 +175,4 @@ export function PodiumView({ podium, snapshots, isHost, onPlayAgain }: PodiumVie
     </div>
   );
 }
+

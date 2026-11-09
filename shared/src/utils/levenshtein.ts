@@ -45,3 +45,4 @@ export function isExactGuess(guess: string, target: string): boolean {
   const clean = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
   return clean(guess) === clean(target);
 }
+

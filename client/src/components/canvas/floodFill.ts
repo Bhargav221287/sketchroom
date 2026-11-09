@@ -111,3 +111,4 @@ export function floodFill(
   ctx.putImageData(imgData, 0, 0);
   return true;
 }
+

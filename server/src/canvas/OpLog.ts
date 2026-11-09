@@ -41,3 +41,4 @@ export class OpLog {
     return [...this.ops];
   }
 }
+

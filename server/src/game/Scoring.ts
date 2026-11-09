@@ -34,3 +34,4 @@ export function calculateDrawerScore(
 
   return Math.min(SCORING.DRAWER_MAX_POINTS, points);
 }
+

@@ -11,11 +11,25 @@ interface SocketState {
   disconnect: () => void;
 }
 
-const SERVER_URL =
-  import.meta.env.VITE_SERVER_URL ||
-  (typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? window.location.origin
-    : "http://localhost:3001");
+const getServerUrl = (): string => {
+  if (import.meta.env.VITE_SERVER_URL) {
+    return import.meta.env.VITE_SERVER_URL;
+  }
+  if (typeof window !== "undefined") {
+    // In dev / preview on port 5173 or 4173, point to backend port 3001
+    if (window.location.port === "5173" || window.location.port === "4173") {
+      return `${window.location.protocol}//${window.location.hostname}:3001`;
+    }
+    const saved = localStorage.getItem("sketchroom_server_url");
+    if (saved) return saved;
+
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:3001";
+    }
+    return window.location.origin;
+  }
+  return "http://localhost:3001";
+};
 
 export const useSocketStore = create<SocketState>((set, get) => ({
   socket: null,
@@ -29,7 +43,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
 
     set({ status: "connecting" });
 
-    currentSocket = io(SERVER_URL, {
+    currentSocket = io(getServerUrl(), {
       transports: ["websocket", "polling"],
       reconnectionAttempts: 20,
       reconnectionDelay: 1000,
@@ -61,3 +75,4 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     }
   },
 }));
+

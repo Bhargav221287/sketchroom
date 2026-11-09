@@ -34,3 +34,4 @@ export function containsProfanity(text: string): boolean {
   const lower = text.toLowerCase().replace(/[\s\-_0-9]/g, "");
   return PROFANITY_LIST.some((word) => lower.includes(word));
 }
+

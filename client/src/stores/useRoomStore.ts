@@ -53,6 +53,8 @@ interface RoomStoreState {
   setReady: (ready: boolean) => void;
   updateSettings: (settings: Partial<RoomSettings>) => void;
   kickPlayer: (playerId: string) => void;
+  addBot: () => void;
+  removeBot: () => void;
   startGame: () => void;
   chooseWord: (index: number) => void;
   playAgain: () => void;
@@ -114,6 +116,24 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
 
     socket.on("room:state", (state) => {
       set({ roomState: state });
+
+      // Self-heal: ensure myPlayerId matches a valid player in the room
+      const currentId = get().myPlayerId;
+      const playerExists = state.players.some((p) => p.id === currentId);
+      if (!playerExists && state.players.length > 0) {
+        // Try matching by nickname
+        const nickMatch = state.players.find((p) => p.nickname === get().myNickname);
+        if (nickMatch) {
+          localStorage.setItem("sketchroom_player_id", nickMatch.id);
+          set({ myPlayerId: nickMatch.id });
+        } else if (state.players.length === 1) {
+          // If solo player, this must be my player
+          const solo = state.players[0];
+          localStorage.setItem("sketchroom_player_id", solo.id);
+          set({ myPlayerId: solo.id });
+        }
+      }
+
       if (state.phase === "LOBBY") {
         set({
           secretWord: undefined,
@@ -281,6 +301,10 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
         if (res.success && res.roomCode && res.sessionToken) {
           localStorage.setItem("sketchroom_session_token", res.sessionToken);
           localStorage.setItem("sketchroom_nickname", nickname);
+          if (res.playerId) {
+            localStorage.setItem("sketchroom_player_id", res.playerId);
+            set({ myPlayerId: res.playerId });
+          }
           set({
             sessionToken: res.sessionToken,
             myNickname: nickname,
@@ -349,8 +373,22 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     }
   },
 
+  addBot: () => {
+    const socket = useSocketStore.getState().connect();
+    if (socket) {
+      socket.emit("room:add_bot");
+    }
+  },
+
+  removeBot: () => {
+    const socket = useSocketStore.getState().connect();
+    if (socket) {
+      socket.emit("room:remove_bot");
+    }
+  },
+
   startGame: () => {
-    const socket = useSocketStore.getState().socket;
+    const socket = useSocketStore.getState().connect();
     if (socket) {
       socket.emit("game:start");
     }
@@ -435,3 +473,4 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     set({ closeGuessAlert: null });
   },
 }));
+

@@ -218,3 +218,4 @@ export function Avatar({ config, size = "md", state = "idle", className }: Avata
     </div>
   );
 }
+

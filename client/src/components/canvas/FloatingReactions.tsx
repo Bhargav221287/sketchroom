@@ -47,3 +47,4 @@ export function FloatingReactions({ reactions }: { reactions: ActiveReaction[] }
     </div>
   );
 }
+

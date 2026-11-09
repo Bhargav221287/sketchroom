@@ -15,6 +15,7 @@ import {
   Settings2,
   Sparkles,
   Lightbulb,
+  Bot,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { toast } from "../design/components/Toast.js";
@@ -28,6 +29,8 @@ export interface LobbyPageProps {
   onUpdateSettings: (settings: Partial<RoomSettings>) => void;
   onSetReady: (ready: boolean) => void;
   onKickPlayer: (playerId: string) => void;
+  onAddBot?: () => void;
+  onRemoveBot?: () => void;
   onStartGame: () => void;
 }
 
@@ -48,6 +51,8 @@ export function LobbyPage({
   onUpdateSettings,
   onSetReady,
   onKickPlayer,
+  onAddBot,
+  onRemoveBot,
   onStartGame,
 }: LobbyPageProps) {
   const isHost = hostId === myPlayerId;
@@ -163,11 +168,37 @@ export function LobbyPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Players Section (2 Columns) */}
         <div className="md:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-display font-bold text-xl flex items-center gap-2">
               <span>Players in Lobby</span>
               <Badge variant="primary">{players.length}/10</Badge>
             </h2>
+
+            {/* Host Bot Controls */}
+            {isHost && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddBot}
+                  disabled={players.length >= 10}
+                  className="gap-1.5 rounded-xl text-xs hover:border-primary"
+                >
+                  <Bot className="w-4 h-4 text-primary" />
+                  <span>Add Bot Player</span>
+                </Button>
+                {players.some((p) => p.id.startsWith("bot-")) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onRemoveBot}
+                    className="text-xs text-text-muted hover:text-danger"
+                  >
+                    Remove Bot
+                  </Button>
+                )}
+              </div>
+            )}
 
             {/* Ready Toggle for Non-Hosts */}
             {!isHost && myPlayer && (
@@ -186,6 +217,7 @@ export function LobbyPage({
             {players.map((player) => {
               const isRoomHost = player.id === hostId;
               const isMe = player.id === myPlayerId;
+              const isBot = player.id.startsWith("bot-");
 
               return (
                 <div
@@ -195,11 +227,16 @@ export function LobbyPage({
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar config={player.avatar} size="md" state="idle" />
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-display font-bold text-sm truncate max-w-[120px]">
                           {player.nickname}
                         </span>
                         {isMe && <span className="text-[10px] text-text-muted font-bold">(You)</span>}
+                        {isBot && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary-light text-primary border border-primary/20">
+                            BOT
+                          </span>
+                        )}
                         {isRoomHost && (
                           <span title="Host">
                             <Crown className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
@@ -207,7 +244,7 @@ export function LobbyPage({
                         )}
                       </div>
                       <span className="text-xs text-text-muted">
-                        {isRoomHost ? "Host" : player.isReady ? "Ready to draw" : "Waiting"}
+                        {isRoomHost ? "Host" : isBot ? "AI Doodler" : player.isReady ? "Ready to draw" : "Waiting"}
                       </span>
                     </div>
                   </div>
@@ -330,8 +367,13 @@ export function LobbyPage({
                     className="w-full gap-2 text-base font-bold shadow-tactile-primary"
                   >
                     <Play className="w-5 h-5 fill-white" />
-                    <span>Start Game</span>
+                    <span>{players.length === 1 ? "Start Game (Practice / Solo)" : "Start Game"}</span>
                   </Button>
+                  {players.length === 1 && (
+                    <p className="text-[11px] text-center font-medium text-text-muted">
+                      💡 Tip: You can practice drawing solo, or click <strong>Add Bot Player</strong> above to play with AI!
+                    </p>
+                  )}
                   {!canStart && (
                     <p className="text-[11px] text-center font-semibold text-warning">
                       ⚠️ Needs at least {MIN_PLAYERS_TO_START} players to start ({players.length}/{MIN_PLAYERS_TO_START})

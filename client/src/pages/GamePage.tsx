@@ -55,6 +55,8 @@ export function GamePage() {
     setReady,
     updateSettings,
     kickPlayer,
+    addBot,
+    removeBot,
     startGame,
     chooseWord,
     playAgain,
@@ -236,6 +238,8 @@ export function GamePage() {
           onUpdateSettings={updateSettings}
           onSetReady={setReady}
           onKickPlayer={kickPlayer}
+          onAddBot={addBot}
+          onRemoveBot={removeBot}
           onStartGame={startGame}
         />
       </div>
@@ -498,3 +502,4 @@ export function GamePage() {
     </div>
   );
 }
+

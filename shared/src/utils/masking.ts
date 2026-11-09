@@ -61,3 +61,4 @@ export function revealHintLetters(
     revealedIndices: newlyRevealedIndices,
   };
 }
+

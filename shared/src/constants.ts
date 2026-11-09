@@ -1,7 +1,7 @@
 export const APP_NAME = "SketchRoom";
 
 export const ROOM_CODE_LENGTH = 5;
-export const MIN_PLAYERS_TO_START = 3;
+export const MIN_PLAYERS_TO_START = 1;
 export const MAX_PLAYERS_PER_ROOM = 10;
 
 export const DEFAULT_ROUNDS = 3;
@@ -49,3 +49,4 @@ export const PALETTE_COLORS = [
 ] as const;
 
 export const EMOJI_REACTIONS = ["👍", "😂", "😮", "🔥", "❤️", "👏"] as const;
+

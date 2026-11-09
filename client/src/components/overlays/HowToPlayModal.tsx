@@ -66,3 +66,4 @@ export function HowToPlayModal({ open, onOpenChange }: HowToPlayModalProps) {
     </Dialog>
   );
 }
+

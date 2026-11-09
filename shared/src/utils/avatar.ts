@@ -81,3 +81,4 @@ export function generateRandomAvatar(): AvatarConfig {
     bgColor: pick(BG_COLORS),
   };
 }
+

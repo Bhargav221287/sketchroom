@@ -16,19 +16,31 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket) {
   // Start Game
   socket.on("game:start", () => {
     const { roomCode, playerId } = socket.data;
-    if (!roomCode || !playerId) return;
+    if (!roomCode || !playerId) {
+      console.warn(`[game:start] Ignored: missing socket.data (roomCode=${roomCode}, playerId=${playerId})`);
+      return;
+    }
 
     const room = roomManager.getRoom(roomCode);
-    if (!room || room.hostId !== playerId) return;
+    if (!room) {
+      console.warn(`[game:start] Ignored: room ${roomCode} not found`);
+      return;
+    }
+
+    if (room.hostId !== playerId) {
+      console.warn(`[game:start] Ignored: player ${playerId} is not host (${room.hostId})`);
+      return;
+    }
 
     if (room.getPlayerCount() < MIN_PLAYERS_TO_START) {
       socket.emit("room:error", {
         code: "MIN_PLAYERS_REQUIRED",
-        message: `At least ${MIN_PLAYERS_TO_START} players are required to start.`,
+        message: `At least ${MIN_PLAYERS_TO_START} player(s) required to start.`,
       });
       return;
     }
 
+    console.log(`[game:start] Room ${roomCode} started by host ${playerId} with ${room.getPlayerCount()} players`);
     room.startGame();
   });
 
@@ -90,3 +102,4 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket) {
     room.saveTurnSnapshot(dataUrl);
   });
 }
+

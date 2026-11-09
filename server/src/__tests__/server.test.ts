@@ -111,3 +111,4 @@ describe("WordBank", () => {
     expect(new Set(words).size).toBe(3); // distinct
   });
 });
+

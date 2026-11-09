@@ -10,3 +10,4 @@ describe("Flood Fill Engine", () => {
     expect(hexToRgb("#fff")).toEqual([255, 255, 255]);
   });
 });
+
