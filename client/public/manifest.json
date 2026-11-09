@@ -1,0 +1,16 @@
+{
+  "short_name": "SketchRoom",
+  "name": "SketchRoom — Social Drawing Game",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F8FAFC",
+  "theme_color": "#8B5CF6",
+  "display": "standalone",
+  "orientation": "any"
+}

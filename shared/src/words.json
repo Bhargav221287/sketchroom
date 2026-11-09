@@ -1,0 +1,55 @@
+{
+  "categories": {
+    "animals": [
+      "alligator", "alpaca", "ant", "anteater", "antelope", "armadillo", "badger", "bat", "bear", "beaver",
+      "bee", "bison", "boar", "buffalo", "butterfly", "camel", "cat", "caterpillar", "cheetah", "chicken",
+      "chimpanzee", "cobra", "crab", "crocodile", "deer", "dinosaur", "dog", "dolphin", "donkey", "duck",
+      "eagle", "elephant", "falcon", "flamingo", "fox", "frog", "giraffe", "goat", "goldfish", "goose",
+      "gorilla", "hamster", "hedgehog", "hippopotamus", "horse", "hyena", "iguana", "jellyfish", "kangaroo", "koala",
+      "leopard", "lion", "llama", "lobster", "meerkat", "monkey", "moose", "mouse", "octopus", "ostrich",
+      "otter", "owl", "panda", "panther", "parrot", "peacock", "pelican", "penguin", "pig", "pigeon",
+      "polar bear", "porcupine", "rabbit", "raccoon", "rat", "reindeer", "rhinoceros", "rooster", "scorpion", "seahorse",
+      "seal", "shark", "sheep", "sloth", "snail", "snake", "spider", "squid", "squirrel", "swan",
+      "tiger", "tortoise", "toucan", "turkey", "turtle", "walrus", "whale", "wolf", "zebra"
+    ],
+    "food": [
+      "apple", "avocado", "bacon", "bagel", "baguette", "banana", "barbecue", "biscuit", "blueberry", "bread",
+      "broccoli", "burger", "burrito", "cake", "candy", "carrot", "cereal", "cheese", "cheeseburger", "cherry",
+      "chocolate", "coffee", "cookie", "corn", "croissant", "cupcake", "donut", "egg", "eggplant", "fish and chips",
+      "french fries", "garlic", "grape", "guacamole", "hamburger", "hot dog", "ice cream", "jam", "jelly", "lasagna",
+      "lemon", "lime", "lollipop", "mango", "marshmallow", "meatball", "milkshake", "muffin", "mushroom", "nachos",
+      "noodles", "onion", "orange", "pancake", "pasta", "peach", "peanut", "pear", "pie", "pineapple",
+      "pizza", "popcorn", "potato", "pretzel", "pumpkin", "radish", "ramen", "salad", "sandwich", "sausage",
+      "soup", "spaghetti", "steak", "strawberry", "sushi", "taco", "toast", "tomato", "waffle", "watermelon"
+    ],
+    "objects": [
+      "airplane", "alarm clock", "anchor", "anvil", "axe", "backpack", "balloon", "bandage", "barrel", "baseball bat",
+      "basket", "bathtub", "battery", "bed", "bell", "bicycle", "binoculars", "blanket", "book", "boomerang",
+      "bottle", "bow and arrow", "broom", "bucket", "calculator", "calendar", "camera", "candle", "canoe", "chair",
+      "chandelier", "clock", "compass", "computer", "couch", "crown", "diamond", "dice", "door", "drum",
+      "eraser", "fan", "fire extinguisher", "flashlight", "fork", "glasses", "guitar", "hammer", "headphones", "helmet",
+      "hourglass", "key", "kite", "ladder", "lamp", "lantern", "laptop", "lock", "magnet", "magnifying glass",
+      "map", "microphone", "microscope", "mirror", "paintbrush", "parachute", "passport", "pencil", "piano", "pillow",
+      "plate", "radio", "ring", "robot", "rocket", "roller skates", "rope", "scissors", "shield", "shovel",
+      "skateboard", "smartphone", "speaker", "spoon", "submarine", "suitcase", "sunglasses", "sword", "telescope", "tent",
+      "toaster", "toothbrush", "torch", "traffic light", "train", "trophy", "umbrella", "vacuum", "violin", "watch"
+    ],
+    "actions": [
+      "baking", "bowling", "boxing", "building", "cheering", "clapping", "climbing", "cooking", "crying", "dancing",
+      "digging", "diving", "drawing", "dreaming", "drinking", "driving", "eating", "falling", "fishing", "flying",
+      "gardening", "hiking", "hunting", "ironing", "juggling", "jumping", "knitting", "laughing", "painting", "photographing",
+      "playing guitar", "reading", "riding a bike", "rowing", "running", "sailing", "singing", "skateboarding", "skating", "skiing",
+      "sleeping", "sliding", "sneezing", "snoring", "surfing", "swimming", "thinking", "throwing", "typing", "walking",
+      "washing dishes", "waving", "whispering", "whistling", "yawning"
+    ],
+    "places": [
+      "airport", "amusement park", "aquarium", "bakery", "bank", "barbershop", "barn", "beach", "bridge", "cafe",
+      "campsite", "castle", "cave", "cemetery", "church", "cinema", "circus", "city", "classroom", "clinic",
+      "desert", "dungeon", "factory", "farm", "fire station", "forest", "gas station", "gym", "harbor", "hospital",
+      "hotel", "igloo", "island", "jungle", "laboratory", "library", "lighthouse", "market", "mine", "monastery",
+      "mountain", "museum", "office", "palace", "park", "pharmacy", "playground", "police station", "post office", "prison",
+      "pyramid", "restaurant", "school", "skyscraper", "space station", "stadium", "supermarket", "temple", "theater", "tunnel",
+      "underwater cave", "university", "volcano", "waterfall", "windmill", "zoo"
+    ]
+  }
+}

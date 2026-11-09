@@ -1,0 +1,23 @@
+{
+  "name": "sketchroom-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Realtime multiplayer drawing and guessing game",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"shared,server,client\" -c \"cyan,green,magenta\" \"npm run dev --workspace=shared\" \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "build": "npm run build --workspace=shared && npm run build --workspace=server && npm run build --workspace=client",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,css,md}\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "prettier": "^3.5.2",
+    "typescript": "^5.7.3"
+  }
+}
