@@ -12,6 +12,7 @@ import { ChatPanel } from "../components/chat/ChatPanel.js";
 import { WordChoiceModal } from "../components/overlays/WordChoiceModal.js";
 import { TurnSummaryModal } from "../components/overlays/TurnSummaryModal.js";
 import { PodiumView } from "../components/podium/PodiumView.js";
+import { ServerSettingsModal } from "../components/modals/ServerSettingsModal.js";
 import { LobbyPage } from "./LobbyPage.js";
 import { ProgressRing } from "../design/components/ProgressRing.js";
 import { Button } from "../design/components/Button.js";
@@ -34,8 +35,9 @@ export function GamePage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
 
-  const { status } = useSocketStore();
+  const { status, mode } = useSocketStore();
   const { isDark, toggleDarkMode } = useThemeStore();
+  const [serverModalOpen, setServerModalOpen] = React.useState(false);
 
   const {
     roomState,
@@ -70,6 +72,8 @@ export function GamePage() {
     sendTurnSnapshot,
   } = useRoomStore();
 
+  console.log("[GamePage] render:", { code, status, mode, myPlayerId, roomState: roomState ? { phase: roomState.phase, code: roomState.roomCode } : null });
+
   // Drawing tool state
   const [currentTool, setCurrentTool] = React.useState<DrawTool>("brush");
   const [currentColor, setCurrentColor] = React.useState("#000000");
@@ -84,6 +88,8 @@ export function GamePage() {
   );
   const [joinAvatar, setJoinAvatar] = React.useState(() => generateRandomAvatar());
   const [isJoining, setIsJoining] = React.useState(false);
+  const [isAutoJoining, setIsAutoJoining] = React.useState(false);
+  const [joinFailed, setJoinFailed] = React.useState(false);
 
   // Active mobile tab: 'canvas' | 'chat' | 'scores'
   const [mobileTab, setMobileTab] = React.useState<"game" | "chat" | "scores">("game");
@@ -95,17 +101,31 @@ export function GamePage() {
     if (!code) return;
     const roomCode = code.toUpperCase();
 
-    if (!roomState || roomState.roomCode !== roomCode) {
-      const storedNick = localStorage.getItem("sketchroom_nickname");
-      if (storedNick) {
-        joinRoom(roomCode, storedNick, generateRandomAvatar()).catch(() => {
-          setShowJoinPrompt(true);
-        });
-      } else {
-        setShowJoinPrompt(true);
-      }
+    if (roomState && roomState.roomCode === roomCode) {
+      setIsAutoJoining(false);
+      setJoinFailed(false);
+      return;
     }
-  }, [code, roomState, joinRoom]);
+
+    const storedNick = localStorage.getItem("sketchroom_nickname");
+    if (storedNick) {
+      setIsAutoJoining(true);
+      setJoinFailed(false);
+      joinRoom(roomCode, storedNick, generateRandomAvatar())
+        .then(() => {
+          setJoinFailed(false);
+        })
+        .catch(() => {
+          setJoinFailed(true);
+          setShowJoinPrompt(true);
+        })
+        .finally(() => {
+          setIsAutoJoining(false);
+        });
+    } else {
+      setShowJoinPrompt(true);
+    }
+  }, [code]);
 
   // Capture canvas snapshot at turn end if current player is drawer
   React.useEffect(() => {
@@ -196,14 +216,43 @@ export function GamePage() {
     );
   }
 
-  if (!roomState) {
+  // Actively auto-joining room from direct link or navigation
+  if (isAutoJoining && !roomState) {
+    return (
+      <div className="min-h-screen bg-surface-0 flex flex-col items-center justify-center p-6 text-center space-y-4 select-none">
+        <div className="w-16 h-16 rounded-3xl bg-primary-light flex items-center justify-center text-primary animate-pulse">
+          <Sparkles className="w-8 h-8" />
+        </div>
+        <h2 className="text-2xl font-display font-bold">Entering Room {code?.toUpperCase()}...</h2>
+        <p className="text-text-muted text-sm max-w-sm">Connecting to game lobby...</p>
+      </div>
+    );
+  }
+
+  // If join failed and no room state exists
+  if (!roomState && joinFailed) {
     return (
       <div className="min-h-screen bg-surface-0 flex flex-col items-center justify-center p-6 text-center space-y-4">
         <WifiOff className="w-12 h-12 text-text-muted" />
         <h2 className="text-xl font-display font-bold">Room Not Found</h2>
+        <p className="text-text-muted text-sm max-w-sm">
+          Could not find room "{code?.toUpperCase()}". Please verify the code or create a new room!
+        </p>
         <Button variant="primary" onClick={() => navigate("/")}>
           Return Home
         </Button>
+      </div>
+    );
+  }
+
+  // Initial brief hydrating state before roomState renders
+  if (!roomState) {
+    return (
+      <div className="min-h-screen bg-surface-0 flex flex-col items-center justify-center p-6 text-center space-y-4 select-none">
+        <div className="w-16 h-16 rounded-3xl bg-primary-light flex items-center justify-center text-primary animate-spin">
+          <Sparkles className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-display font-bold">Connecting...</h2>
       </div>
     );
   }
@@ -352,16 +401,19 @@ export function GamePage() {
         {/* Quick Actions (Sound, Theme, Leave) */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Connection status pill */}
-          <div
-            className={`flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${
-              status === "connected"
-                ? "bg-success-light text-success border-success/30"
-                : "bg-danger-light text-danger border-danger/30"
+          <button
+            type="button"
+            onClick={() => setServerModalOpen(true)}
+            className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
+              mode === "cloud"
+                ? "bg-success-light text-success border-success/30 hover:bg-success/20"
+                : "bg-primary-light text-primary border-primary/30 hover:bg-primary/20"
             }`}
+            title="Click to configure realtime server"
           >
             <Radio className="w-3 h-3" />
-            <span className="hidden md:inline">{status}</span>
-          </div>
+            <span className="hidden md:inline">{mode === "cloud" ? "Cloud" : "Instant"}</span>
+          </button>
 
           <Button variant="secondary" size="icon" onClick={handleMuteToggle} className="w-9 h-9 rounded-xl">
             {isMuted ? <VolumeX className="w-4 h-4 text-danger" /> : <Volume2 className="w-4 h-4" />}
@@ -499,6 +551,9 @@ export function GamePage() {
         summary={turnSummary}
         timeLeft={roomState.timeLeftSeconds || 8}
       />
+
+      {/* Server Settings Modal */}
+      <ServerSettingsModal open={serverModalOpen} onOpenChange={setServerModalOpen} />
     </div>
   );
 }

@@ -46,6 +46,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
         roomCode: room.roomCode,
         playerId,
         sessionToken,
+        roomState: room.getState(),
       });
     } catch (err: any) {
       callback({
@@ -73,6 +74,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
           roomCode: code,
           playerId: socket.data.playerId,
           sessionToken,
+          roomState: room.getState(),
         });
         return;
       }
@@ -107,6 +109,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
         roomCode: code,
         playerId,
         sessionToken: newSessionToken,
+        roomState: room.getState(),
       });
     } catch (err: any) {
       callback({ success: false, error: err.message || "Failed to join room" });

@@ -305,6 +305,9 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
             localStorage.setItem("sketchroom_player_id", res.playerId);
             set({ myPlayerId: res.playerId });
           }
+          if (res.roomState) {
+            set({ roomState: res.roomState });
+          }
           set({
             sessionToken: res.sessionToken,
             myNickname: nickname,
@@ -333,6 +336,9 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
           if (res.playerId) {
             localStorage.setItem("sketchroom_player_id", res.playerId);
             set({ myPlayerId: res.playerId });
+          }
+          if (res.roomState) {
+            set({ roomState: res.roomState });
           }
           localStorage.setItem("sketchroom_nickname", nickname);
           set({ myNickname: nickname, myAvatar: avatar });

@@ -5,6 +5,8 @@ import { useRoomStore } from "../stores/useRoomStore.js";
 import { useThemeStore } from "../stores/useThemeStore.js";
 import { AvatarBuilder } from "../components/avatar/AvatarBuilder.js";
 import { HowToPlayModal } from "../components/overlays/HowToPlayModal.js";
+import { ServerSettingsModal } from "../components/modals/ServerSettingsModal.js";
+import { useSocketStore } from "../stores/useSocketStore.js";
 import { Button } from "../design/components/Button.js";
 import { Card, CardContent } from "../design/components/Card.js";
 import { Input } from "../design/components/Input.js";
@@ -25,6 +27,7 @@ export function LandingPage() {
   const navigate = useNavigate();
   const { createRoom, joinRoom } = useRoomStore();
   const { accent, isDark, setAccent, toggleDarkMode } = useThemeStore();
+  const { mode } = useSocketStore();
 
   const [nickname, setNickname] = React.useState(
     () => localStorage.getItem("sketchroom_nickname") || "DoodleChamp"
@@ -34,6 +37,7 @@ export function LandingPage() {
   const [isCreating, setIsCreating] = React.useState(false);
   const [isJoining, setIsJoining] = React.useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = React.useState(false);
+  const [serverModalOpen, setServerModalOpen] = React.useState(false);
 
   // Parallax mouse position
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
@@ -83,9 +87,12 @@ export function LandingPage() {
     }
     setIsCreating(true);
     try {
+      console.log("[LandingPage] calling createRoom...");
       const code = await createRoom(nickname.trim(), avatar);
+      console.log("[LandingPage] room created with code:", code);
       navigate(`/room/${code}`);
     } catch (err: any) {
+      console.error("[LandingPage] createRoom failed:", err);
       toast.error(err.message || "Failed to create room");
     } finally {
       setIsCreating(false);
@@ -139,6 +146,26 @@ export function LandingPage() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Server Connection Mode Pill */}
+          <button
+            type="button"
+            onClick={() => setServerModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-border bg-surface-1 text-xs hover:border-primary transition-colors cursor-pointer"
+            title="Realtime Server Connection Settings"
+          >
+            {mode === "cloud" ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                <span className="hidden sm:inline font-bold text-success text-[11px]">Cloud</span>
+              </>
+            ) : (
+              <>
+                <span className="w-2 h-2 rounded-full bg-primary" />
+                <span className="hidden sm:inline font-bold text-primary text-[11px]">Instant Engine</span>
+              </>
+            )}
+          </button>
+
           {/* Theme Accent Picker */}
           <div className="flex items-center bg-surface-1 border-2 border-border rounded-2xl p-1 gap-1">
             {ACCENT_THEMES.map((t) => (
@@ -323,6 +350,9 @@ export function LandingPage() {
 
       {/* How To Play Walkthrough Modal */}
       <HowToPlayModal open={howToPlayOpen} onOpenChange={setHowToPlayOpen} />
+
+      {/* Server Settings Modal */}
+      <ServerSettingsModal open={serverModalOpen} onOpenChange={setServerModalOpen} />
     </div>
   );
 }

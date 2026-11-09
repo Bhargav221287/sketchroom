@@ -23,6 +23,7 @@ export interface ClientToServerEvents {
       roomCode?: string;
       playerId?: string;
       sessionToken?: string;
+      roomState?: RoomState;
       error?: string;
     }) => void
   ) => void;
@@ -34,7 +35,14 @@ export interface ClientToServerEvents {
       avatar: AvatarConfig;
       sessionToken?: string;
     },
-    callback: (response: { success: boolean; roomCode?: string; playerId?: string; sessionToken?: string; error?: string }) => void
+    callback: (response: {
+      success: boolean;
+      roomCode?: string;
+      playerId?: string;
+      sessionToken?: string;
+      roomState?: RoomState;
+      error?: string;
+    }) => void
   ) => void;
 
   "room:leave": () => void;

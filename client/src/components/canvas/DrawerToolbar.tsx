@@ -2,7 +2,7 @@ import * as React from "react";
 import { DrawTool, PALETTE_COLORS } from "@sketchroom/shared";
 import { Button } from "../../design/components/Button.js";
 import { Slider } from "../../design/components/Slider.js";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../design/components/Tooltip.js";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../design/components/Tooltip.js";
 import {
   Dialog,
   DialogContent,
@@ -112,7 +112,8 @@ export function DrawerToolbar({
       </button>
 
       {isExpanded && (
-        <div className="w-full max-w-3xl rounded-3xl bg-surface-1 border-2 border-border p-3 shadow-xl flex flex-col md:flex-row items-center justify-between gap-3 select-none">
+        <TooltipProvider delayDuration={200}>
+          <div className="w-full max-w-3xl rounded-3xl bg-surface-1 border-2 border-border p-3 shadow-xl flex flex-col md:flex-row items-center justify-between gap-3 select-none">
           {/* Tool Selector */}
           <div className="flex items-center gap-1 bg-surface-2 p-1.5 rounded-2xl border border-border/50">
             {tools.map(({ id, icon: Icon, label, shortcut }) => (
@@ -258,7 +259,8 @@ export function DrawerToolbar({
             </div>
           </div>
         </div>
-      )}
+      </TooltipProvider>
+    )}
     </div>
   );
 }

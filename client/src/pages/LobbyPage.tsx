@@ -389,6 +389,18 @@ export function LobbyPage({
           </Card>
         </div>
       </div>
+
+      <footer className="text-center text-xs text-text-muted mt-8 mb-4">
+        Developed with ❤️ by{" "}
+        <a
+          href="https://github.com/Bhargav221287"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-primary hover:underline"
+        >
+          Bhargav
+        </a>
+      </footer>
     </div>
   );
 }

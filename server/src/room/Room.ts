@@ -122,6 +122,9 @@ export class Room {
       socket.emit("draw:history_replay", { ops: this.opLog.getOps() });
     }
 
+    // Direct emit to the joining socket to guarantee arrival
+    socket.emit("room:state", this.getState());
+
     this.broadcast("player:joined", player);
     this.emitRoomState();
   }
