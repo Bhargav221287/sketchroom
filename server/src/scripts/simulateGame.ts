@@ -91,18 +91,23 @@ async function runSimulation() {
     console.log(`\n[Step 3] Host starts game...`);
     let activeDrawerId = "";
     let secretWord = "";
+    let drawerSocket: TypedSocket = hostSocket;
 
     const turnPromise = new Promise<void>((resolve) => {
-      hostSocket.on("game:word_options", ({ words }) => {
-        console.log(`✓ Drawer received word choices: [${words.join(", ")}]`);
-        secretWord = words[0];
-        hostSocket.emit("game:choose_word", { wordIndex: 0 });
-      });
+      // Any socket can be the chosen drawer
+      sockets.forEach((s) => {
+        s.on("game:word_options", ({ words }) => {
+          drawerSocket = s;
+          console.log(`✓ Drawer received word choices: [${words.join(", ")}]`);
+          secretWord = words[0];
+          s.emit("game:choose_word", { wordIndex: 0 });
+        });
 
-      hostSocket.on("game:turn_start", (data) => {
-        activeDrawerId = data.drawerId;
-        console.log(`✓ Turn started! Drawer: ${data.drawerId}, Word Length: ${data.wordLength}`);
-        resolve();
+        s.on("game:turn_start", (data) => {
+          activeDrawerId = data.drawerId;
+          console.log(`✓ Turn started! Drawer: ${data.drawerId}, Word Length: ${data.wordLength}`);
+          resolve();
+        });
       });
     });
 
@@ -125,14 +130,13 @@ async function runSimulation() {
       ],
     };
 
-    const drawerSocket = sockets[0]; // Host or drawer
     drawerSocket.emit("draw:op", { op: strokeOp });
     drawerSocket.emit("draw:cursor_move", { x: 0.5, y: 0.5 });
     console.log(`✓ Draw op and cursor move dispatched.`);
 
     // 5. Simulate Guesses & Proximity Detection
     console.log(`\n[Step 5] Simulating guesses and 'close' hint...`);
-    const guesserSocket = sockets[1];
+    const guesserSocket = sockets.find((s) => s !== drawerSocket) || sockets[1];
 
     let closeHintReceived = false;
     guesserSocket.on("chat:close_guess", ({ message }) => {

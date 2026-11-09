@@ -58,6 +58,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
           <div className="flex items-center justify-between bg-surface-1 border border-border rounded-xl px-2 py-1">
             <button
               type="button"
+              aria-label="Previous face shape"
               onClick={() => update({ faceShape: cycleOption(FACE_SHAPES, value.faceShape, -1) })}
               className="p-1 hover:text-primary"
             >
@@ -66,6 +67,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
             <span className="text-xs font-display font-semibold capitalize">{value.faceShape}</span>
             <button
               type="button"
+              aria-label="Next face shape"
               onClick={() => update({ faceShape: cycleOption(FACE_SHAPES, value.faceShape, 1) })}
               className="p-1 hover:text-primary"
             >
@@ -80,6 +82,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
           <div className="flex items-center justify-between bg-surface-1 border border-border rounded-xl px-2 py-1">
             <button
               type="button"
+              aria-label="Previous eye style"
               onClick={() => update({ eyes: cycleOption(EYES, value.eyes, -1) })}
               className="p-1 hover:text-primary"
             >
@@ -88,6 +91,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
             <span className="text-xs font-display font-semibold capitalize">{value.eyes}</span>
             <button
               type="button"
+              aria-label="Next eye style"
               onClick={() => update({ eyes: cycleOption(EYES, value.eyes, 1) })}
               className="p-1 hover:text-primary"
             >
@@ -102,6 +106,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
           <div className="flex items-center justify-between bg-surface-1 border border-border rounded-xl px-2 py-1">
             <button
               type="button"
+              aria-label="Previous mouth style"
               onClick={() => update({ mouth: cycleOption(MOUTHS, value.mouth, -1) })}
               className="p-1 hover:text-primary"
             >
@@ -110,6 +115,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
             <span className="text-xs font-display font-semibold capitalize">{value.mouth}</span>
             <button
               type="button"
+              aria-label="Next mouth style"
               onClick={() => update({ mouth: cycleOption(MOUTHS, value.mouth, 1) })}
               className="p-1 hover:text-primary"
             >
@@ -124,6 +130,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
           <div className="flex items-center justify-between bg-surface-1 border border-border rounded-xl px-2 py-1">
             <button
               type="button"
+              aria-label="Previous accessory"
               onClick={() => update({ accessory: cycleOption(ACCESSORIES, value.accessory, -1) })}
               className="p-1 hover:text-primary"
             >
@@ -132,6 +139,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
             <span className="text-xs font-display font-semibold capitalize">{value.accessory}</span>
             <button
               type="button"
+              aria-label="Next accessory"
               onClick={() => update({ accessory: cycleOption(ACCESSORIES, value.accessory, 1) })}
               className="p-1 hover:text-primary"
             >
@@ -148,6 +156,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
               <button
                 key={color}
                 type="button"
+                aria-label={`Select face color ${color}`}
                 onClick={() => update({ faceColor: color })}
                 style={{ backgroundColor: color }}
                 className={`w-6 h-6 rounded-full border-2 shrink-0 transition-transform ${
@@ -166,6 +175,7 @@ export function AvatarBuilder({ value, onChange }: AvatarBuilderProps) {
               <button
                 key={bg}
                 type="button"
+                aria-label={`Select background color ${bg}`}
                 onClick={() => update({ bgColor: bg })}
                 style={{ backgroundColor: bg }}
                 className={`w-6 h-6 rounded-full border-2 shrink-0 transition-transform ${

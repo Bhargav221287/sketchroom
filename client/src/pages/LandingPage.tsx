@@ -145,6 +145,7 @@ export function LandingPage() {
               <button
                 key={t.id}
                 onClick={() => setAccent(t.id)}
+                aria-label={`${t.name} Theme`}
                 className={`w-6 h-6 rounded-full border transition-transform ${
                   accent === t.id ? "scale-110 border-black/40 ring-2 ring-primary/40 shadow-sm" : "border-transparent"
                 }`}
@@ -230,10 +231,10 @@ export function LandingPage() {
               {/* Create Room Box */}
               <div className="p-5 rounded-3xl bg-surface-2 border-2 border-border/80 flex flex-col justify-between space-y-4">
                 <div>
-                  <h3 className="font-display font-bold text-lg text-text-primary flex items-center gap-2">
+                  <h2 className="font-display font-bold text-lg text-text-primary flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-primary" />
                     <span>Host a Game</span>
-                  </h3>
+                  </h2>
                   <p className="text-xs text-text-muted mt-1">
                     Create a private room, customize rounds, draw time, and word categories.
                   </p>
@@ -254,10 +255,10 @@ export function LandingPage() {
               {/* Join Room Box */}
               <div className="p-5 rounded-3xl bg-surface-2 border-2 border-border/80 flex flex-col justify-between space-y-4">
                 <div>
-                  <h3 className="font-display font-bold text-lg text-text-primary flex items-center gap-2">
+                  <h2 className="font-display font-bold text-lg text-text-primary flex items-center gap-2">
                     <Users className="w-5 h-5 text-accent" />
                     <span>Join with Code</span>
-                  </h3>
+                  </h2>
                   <p className="text-xs text-text-muted mt-1">
                     Enter the 5-letter code provided by your host.
                   </p>
@@ -272,6 +273,7 @@ export function LandingPage() {
                       type="text"
                       maxLength={5}
                       value={digit}
+                      aria-label={`Room code digit ${i + 1}`}
                       onChange={(e) => handleDigitChange(i, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(i, e)}
                       className="w-11 h-12 text-center text-lg font-display font-bold uppercase rounded-2xl border-2 border-border bg-surface-1 focus:border-primary focus:outline-none transition-colors"
