@@ -49,7 +49,7 @@ export class VirtualSocket {
     });
   }
 
-  private triggerLocal(event: string, ...args: any[]) {
+  public triggerLocal(event: string, ...args: any[]) {
     const handlers = this.eventHandlers.get(event);
     if (handlers) {
       handlers.forEach((h) => {
@@ -115,97 +115,183 @@ export class VirtualSocket {
       }
 
       case "room:add_bot":
-        virtualServer.addBotPlayer();
+        if (virtualServer.isHostInstance) {
+          virtualServer.addBotPlayer();
+        } else {
+          virtualServer.forwardClientAction("room:add_bot", {});
+        }
         break;
 
       case "room:remove_bot":
-        virtualServer.removeBotPlayer();
+        if (virtualServer.isHostInstance) {
+          virtualServer.removeBotPlayer();
+        } else {
+          virtualServer.forwardClientAction("room:remove_bot", {});
+        }
         break;
 
       case "room:update_settings": {
         const [payload] = args;
-        virtualServer.updateSettings(payload.settings);
+        if (virtualServer.isHostInstance) {
+          virtualServer.updateSettings(payload.settings);
+        } else {
+          virtualServer.forwardClientAction("room:update_settings", { settings: payload.settings });
+        }
         break;
       }
 
       case "room:set_ready": {
         const [payload] = args;
         if (this.data.playerId) {
-          virtualServer.setReady(this.data.playerId, payload.ready);
+          if (virtualServer.isHostInstance) {
+            virtualServer.setReady(this.data.playerId, payload.ready);
+          } else {
+            virtualServer.forwardClientAction("room:set_ready", {
+              playerId: this.data.playerId,
+              ready: payload.ready,
+            });
+          }
         }
         break;
       }
 
       case "room:kick": {
         const [payload] = args;
-        virtualServer.kickPlayer(payload.targetPlayerId);
+        if (virtualServer.isHostInstance) {
+          virtualServer.kickPlayer(payload.targetPlayerId);
+        } else {
+          virtualServer.forwardClientAction("room:kick", { targetPlayerId: payload.targetPlayerId });
+        }
         break;
       }
 
       case "room:leave":
         if (this.data.playerId) {
-          virtualServer.kickPlayer(this.data.playerId);
+          if (virtualServer.isHostInstance) {
+            virtualServer.kickPlayer(this.data.playerId);
+          } else {
+            virtualServer.forwardClientAction("room:kick", { targetPlayerId: this.data.playerId });
+          }
         }
         break;
 
       case "game:start":
-        virtualServer.startGame();
+        if (virtualServer.isHostInstance) {
+          virtualServer.startGame();
+        } else {
+          virtualServer.forwardClientAction("game:start", {});
+        }
         break;
 
       case "game:choose_word": {
         const [payload] = args;
-        virtualServer.chooseWord(payload.wordIndex);
+        if (virtualServer.isHostInstance) {
+          virtualServer.chooseWord(payload.wordIndex);
+        } else {
+          virtualServer.forwardClientAction("game:choose_word", { wordIndex: payload.wordIndex });
+        }
         break;
       }
 
       case "game:play_again":
-        virtualServer.playAgain();
+        if (virtualServer.isHostInstance) {
+          virtualServer.playAgain();
+        } else {
+          virtualServer.forwardClientAction("game:play_again", {});
+        }
         break;
 
       case "draw:op": {
         const [payload] = args;
-        virtualServer.handleDrawOp(payload.op);
+        if (virtualServer.isHostInstance) {
+          virtualServer.handleDrawOp(payload.op);
+        } else {
+          // Immediately render locally for zero input lag
+          this.triggerLocal("draw:op", { op: payload.op });
+          virtualServer.forwardClientAction("draw:op", { op: payload.op });
+        }
         break;
       }
 
       case "draw:undo":
-        virtualServer.handleUndo();
+        if (virtualServer.isHostInstance) {
+          virtualServer.handleUndo();
+        } else {
+          this.triggerLocal("draw:undo");
+          virtualServer.forwardClientAction("draw:undo", {});
+        }
         break;
 
       case "draw:redo":
-        virtualServer.handleRedo();
+        if (virtualServer.isHostInstance) {
+          virtualServer.handleRedo();
+        } else {
+          virtualServer.forwardClientAction("draw:redo", {});
+        }
         break;
 
       case "draw:clear":
-        virtualServer.handleClear();
+        if (virtualServer.isHostInstance) {
+          virtualServer.handleClear();
+        } else {
+          this.triggerLocal("draw:clear");
+          virtualServer.forwardClientAction("draw:clear", {});
+        }
         break;
 
       case "draw:cursor_move": {
         const [payload] = args;
-        virtualServer.handleCursorMove(payload.x, payload.y, this.data.playerId || "");
+        if (virtualServer.isHostInstance) {
+          virtualServer.handleCursorMove(payload.x, payload.y, this.data.playerId || "");
+        } else {
+          virtualServer.forwardClientAction("draw:cursor_move", {
+            x: payload.x,
+            y: payload.y,
+            playerId: this.data.playerId || "",
+          });
+        }
         break;
       }
 
       case "turn:snapshot":
       case "draw:turn_snapshot": {
         const [payload] = args;
-        virtualServer.saveTurnSnapshot(payload.dataUrl);
+        if (virtualServer.isHostInstance) {
+          virtualServer.saveTurnSnapshot(payload.dataUrl);
+        } else {
+          virtualServer.forwardClientAction("turn:snapshot", { dataUrl: payload.dataUrl });
+        }
         break;
       }
 
       case "chat:send": {
         const [payload] = args;
-        virtualServer.handleChat(this.data.playerId || "", payload.text);
+        if (virtualServer.isHostInstance) {
+          virtualServer.handleChat(this.data.playerId || "", payload.text);
+        } else {
+          virtualServer.forwardClientAction("chat:send", {
+            playerId: this.data.playerId || "",
+            text: payload.text,
+          });
+        }
         break;
       }
 
       case "reaction:send": {
         const [payload] = args;
-        virtualServer.handleReaction(
-          payload.emoji,
-          this.data.playerId || "",
-          this.data.nickname || "Doodler"
-        );
+        if (virtualServer.isHostInstance) {
+          virtualServer.handleReaction(
+            payload.emoji,
+            this.data.playerId || "",
+            this.data.nickname || "Doodler"
+          );
+        } else {
+          virtualServer.forwardClientAction("reaction:send", {
+            emoji: payload.emoji,
+            playerId: this.data.playerId || "",
+            playerName: this.data.nickname || "Doodler",
+          });
+        }
         break;
       }
 
