@@ -129,27 +129,25 @@ export class Room {
     this.emitRoomState();
   }
 
-  public handleDisconnect(playerId: string): void {
+  public handleDisconnect(playerId: string, socket?: TypedSocket): void {
     this.touch();
     const player = this.players.get(playerId);
     if (!player) return;
 
-    this.sockets.delete(playerId);
-
-    // In lobby: player can be dropped if not rejoining quickly
-    if (this.phase === "LOBBY") {
-      this.players.delete(playerId);
-      this.migrateHostIfNeeded();
-      this.broadcast("player:left", { playerId, newHostId: this.hostId });
-      this.emitRoomState();
+    // Guard against stale disconnect events:
+    // If player has already reconnected with a newer active socket, ignore stale disconnect
+    const activeSocket = this.sockets.get(playerId);
+    if (socket && activeSocket && activeSocket.id !== socket.id) {
       return;
     }
 
-    // During active game: hold slot for RECONNECT_WINDOW_SECONDS
+    this.sockets.delete(playerId);
     player.isDisconnected = true;
     player.disconnectedAt = Date.now();
     this.emitRoomState();
 
+    // Grace period before removing player (15s in lobby, RECONNECT_WINDOW_SECONDS during game)
+    const graceMs = (this.phase === "LOBBY" ? 15 : RECONNECT_WINDOW_SECONDS) * 1000;
     const timer = setTimeout(() => {
       this.disconnectTimers.delete(playerId);
       const lingering = this.players.get(playerId);
@@ -164,7 +162,7 @@ export class Room {
           this.endTurn();
         }
       }
-    }, RECONNECT_WINDOW_SECONDS * 1000);
+    }, graceMs);
 
     this.disconnectTimers.set(playerId, timer);
   }

@@ -34,11 +34,8 @@ const getTargetServerUrl = (): string | null => {
   }
 
   if (typeof window !== "undefined") {
-    // Check dev/preview ports on localhost
-    if (
-      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
-      (window.location.port === "5173" || window.location.port === "4173")
-    ) {
+    // Dev/preview servers on port 5173 or 4173 always connect to backend on port 3001 (works for localhost and LAN IPs)
+    if (window.location.port === "5173" || window.location.port === "4173") {
       return `${window.location.protocol}//${window.location.hostname}:3001`;
     }
 

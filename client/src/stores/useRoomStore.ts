@@ -71,9 +71,9 @@ interface RoomStoreState {
 
 export const useRoomStore = create<RoomStoreState>((set, get) => ({
   roomState: null,
-  myPlayerId: localStorage.getItem("sketchroom_player_id") || "",
-  sessionToken: localStorage.getItem("sketchroom_session_token") || "",
-  myNickname: localStorage.getItem("sketchroom_nickname") || "Doodler",
+  myPlayerId: (typeof window !== "undefined" ? sessionStorage.getItem("sketchroom_player_id") : "") || "",
+  sessionToken: (typeof window !== "undefined" ? sessionStorage.getItem("sketchroom_session_token") : "") || "",
+  myNickname: (typeof window !== "undefined" ? localStorage.getItem("sketchroom_nickname") : "") || "Doodler",
   myAvatar: null,
 
   secretWord: undefined,
@@ -117,20 +117,15 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     socket.on("room:state", (state) => {
       set({ roomState: state });
 
-      // Self-heal: ensure myPlayerId matches a valid player in the room
+      // Ensure myPlayerId matches a valid player in the room if already set
       const currentId = get().myPlayerId;
       const playerExists = state.players.some((p) => p.id === currentId);
       if (!playerExists && state.players.length > 0) {
-        // Try matching by nickname
-        const nickMatch = state.players.find((p) => p.nickname === get().myNickname);
-        if (nickMatch) {
-          localStorage.setItem("sketchroom_player_id", nickMatch.id);
+        // Try matching by nickname and active session
+        const nickMatch = state.players.find((p) => p.nickname === get().myNickname && !p.isDisconnected);
+        if (nickMatch && get().sessionToken) {
+          sessionStorage.setItem("sketchroom_player_id", nickMatch.id);
           set({ myPlayerId: nickMatch.id });
-        } else if (state.players.length === 1) {
-          // If solo player, this must be my player
-          const solo = state.players[0];
-          localStorage.setItem("sketchroom_player_id", solo.id);
-          set({ myPlayerId: solo.id });
         }
       }
 
@@ -299,10 +294,10 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     return new Promise((resolve, reject) => {
       socket.emit("room:create", { nickname, avatar, settings }, (res) => {
         if (res.success && res.roomCode && res.sessionToken) {
-          localStorage.setItem("sketchroom_session_token", res.sessionToken);
+          sessionStorage.setItem("sketchroom_session_token", res.sessionToken);
           localStorage.setItem("sketchroom_nickname", nickname);
           if (res.playerId) {
-            localStorage.setItem("sketchroom_player_id", res.playerId);
+            sessionStorage.setItem("sketchroom_player_id", res.playerId);
             set({ myPlayerId: res.playerId });
           }
           if (res.roomState) {
@@ -324,17 +319,18 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
   joinRoom: async (roomCode, nickname, avatar) => {
     const socket = useSocketStore.getState().connect();
     get().initListeners();
-    const sessionToken = get().sessionToken;
+    // Only pass sessionToken if already stored for this tab in sessionStorage
+    const sessionToken = get().sessionToken || (typeof window !== "undefined" ? sessionStorage.getItem("sketchroom_session_token") : "") || undefined;
 
     return new Promise((resolve, reject) => {
-      socket.emit("room:join", { roomCode, nickname, avatar, sessionToken }, (res) => {
+      socket.emit("room:join", { roomCode, nickname, avatar, sessionToken: sessionToken || undefined }, (res) => {
         if (res.success && res.roomCode) {
           if (res.sessionToken) {
-            localStorage.setItem("sketchroom_session_token", res.sessionToken);
+            sessionStorage.setItem("sketchroom_session_token", res.sessionToken);
             set({ sessionToken: res.sessionToken });
           }
           if (res.playerId) {
-            localStorage.setItem("sketchroom_player_id", res.playerId);
+            sessionStorage.setItem("sketchroom_player_id", res.playerId);
             set({ myPlayerId: res.playerId });
           }
           if (res.roomState) {
@@ -355,7 +351,11 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     if (socket) {
       socket.emit("room:leave");
     }
-    set({ roomState: null, canvasOps: [], chatMessages: [] });
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("sketchroom_session_token");
+      sessionStorage.removeItem("sketchroom_player_id");
+    }
+    set({ roomState: null, canvasOps: [], chatMessages: [], sessionToken: "", myPlayerId: "" });
   },
 
   setReady: (ready) => {

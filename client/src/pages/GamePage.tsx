@@ -107,8 +107,10 @@ export function GamePage() {
       return;
     }
 
-    const storedNick = localStorage.getItem("sketchroom_nickname");
-    if (storedNick) {
+    // If this tab already has a session token, attempt seamless reconnection
+    const sessionToken = typeof window !== "undefined" ? sessionStorage.getItem("sketchroom_session_token") : null;
+    if (sessionToken) {
+      const storedNick = localStorage.getItem("sketchroom_nickname") || "Doodler";
       setIsAutoJoining(true);
       setJoinFailed(false);
       joinRoom(roomCode, storedNick, generateRandomAvatar())
@@ -123,6 +125,7 @@ export function GamePage() {
           setIsAutoJoining(false);
         });
     } else {
+      // New player opening the link: prompt to pick their nickname and avatar
       setShowJoinPrompt(true);
     }
   }, [code]);

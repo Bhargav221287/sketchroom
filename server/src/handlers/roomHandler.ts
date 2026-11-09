@@ -188,7 +188,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
     if (roomCode && playerId) {
       const room = roomManager.getRoom(roomCode);
       if (room) {
-        room.handleDisconnect(playerId);
+        room.handleDisconnect(playerId, socket);
       }
     }
   });

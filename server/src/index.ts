@@ -55,7 +55,10 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
   server,
   {
     cors: {
-      origin: "*",
+      origin: (origin, callback) => {
+        // Dynamically allow requesting origin so credentials: true is compliant with CORS spec
+        callback(null, true);
+      },
       methods: ["GET", "POST"],
       credentials: true,
     },
