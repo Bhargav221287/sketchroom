@@ -118,7 +118,34 @@ export function LobbyPage({
 
   const canStart = players.length >= MIN_PLAYERS_TO_START;
 
-  const ALL_CATEGORIES = ["animals", "food", "objects", "actions", "places"];
+  const CATEGORY_DEFINITIONS = [
+    { id: "tollywood", label: "🎬 Tollywood Movies" },
+    { id: "south_movies", label: "🎥 South Indian Movies" },
+    { id: "south_heroes", label: "⭐ South Heroes" },
+    { id: "south_heroines", label: "✨ South Heroines" },
+    { id: "animals", label: "🐾 Animals" },
+    { id: "food", label: "🍕 Food" },
+    { id: "objects", label: "🎸 Objects" },
+    { id: "actions", label: "🏃 Actions" },
+    { id: "places", label: "🏰 Places" },
+  ];
+
+  const handleSelectPreset = (preset: "south" | "standard" | "all") => {
+    if (!isHost) return;
+    if (preset === "south") {
+      onUpdateSettings({
+        categories: ["tollywood", "south_movies", "south_heroes", "south_heroines"],
+      });
+    } else if (preset === "standard") {
+      onUpdateSettings({
+        categories: ["animals", "food", "objects", "actions", "places"],
+      });
+    } else if (preset === "all") {
+      onUpdateSettings({
+        categories: CATEGORY_DEFINITIONS.map((c) => c.id),
+      });
+    }
+  };
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6 py-4 animate-in fade-in-0">
@@ -316,24 +343,53 @@ export function LobbyPage({
               </div>
 
               {/* Word Categories Multi-Select Chips */}
-              <div className="space-y-2">
-                <span className="text-xs font-semibold text-text-muted block">Word Categories:</span>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-text-muted">Word Categories:</span>
+                  {isHost && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPreset("south")}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/30 hover:bg-amber-500/20 transition-all"
+                        title="Tollywood & South Movies, Heroes & Heroines"
+                      >
+                        🌟 South Cinema
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPreset("standard")}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-surface-2 text-text-muted border border-border hover:bg-surface-3 transition-all"
+                      >
+                        🎨 Classic
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPreset("all")}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-surface-2 text-text-muted border border-border hover:bg-surface-3 transition-all"
+                      >
+                        🎲 All
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex flex-wrap gap-1.5">
-                  {ALL_CATEGORIES.map((cat) => {
-                    const active = (settings.categories || []).includes(cat);
+                  {CATEGORY_DEFINITIONS.map((cat) => {
+                    const active = (settings.categories || []).includes(cat.id);
                     return (
                       <button
-                        key={cat}
+                        key={cat.id}
                         type="button"
-                        onClick={() => handleCategoryToggle(cat)}
+                        onClick={() => handleCategoryToggle(cat.id)}
                         disabled={!isHost}
-                        className={`text-xs font-display font-semibold px-2.5 py-1 rounded-xl border transition-all capitalize ${
+                        className={`text-xs font-display font-semibold px-2.5 py-1 rounded-xl border transition-all ${
                           active
-                            ? "bg-primary text-white border-primary shadow-sm"
+                            ? "bg-primary text-white border-primary shadow-sm ring-1 ring-primary/30"
                             : "bg-surface-2 text-text-muted border-border hover:bg-surface-3"
                         } ${!isHost && "cursor-default"}`}
                       >
-                        {cat}
+                        {cat.label}
                       </button>
                     );
                   })}

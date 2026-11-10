@@ -50,7 +50,51 @@
       "mountain", "museum", "office", "palace", "park", "pharmacy", "playground", "police station", "post office", "prison",
       "pyramid", "restaurant", "school", "skyscraper", "space station", "stadium", "supermarket", "temple", "theater", "tunnel",
       "underwater cave", "university", "volcano", "waterfall", "windmill", "zoo"
+    ],
+    "tollywood": [
+      "Baahubali", "RRR", "Pushpa", "Magadheera", "Pokiri", "Eega", "Athadu", "Arjun Reddy",
+      "Ala Vaikunthapurramuloo", "Devara", "Kalki", "Salaar", "Rangasthalam", "Srimanthudu",
+      "Geetha Govindam", "Gabbar Singh", "Mirchi", "DJ Tillu", "Dookudu", "Attarintiki Daredi",
+      "Jersey", "Bommarillu", "Happy Days", "Chatrapathi", "Simhadri", "Vikramarkudu",
+      "Race Gurram", "Sarileru Neekevvaru", "Bharat Ane Nenu", "Kick", "Arya", "Business Man",
+      "Jalsa", "Khaleja", "Mahanati", "Sita Ramam", "Hi Nanna", "HanuMan", "Baby",
+      "Waltair Veerayya", "Veera Simha Reddy", "Akhanda", "Legend", "Billa", "Varsham",
+      "Murari", "Okkadu", "Tagore", "Indra", "Gangleader", "Yamadonga", "Nannaku Prematho",
+      "Aravinda Sametha", "Saripodhaa Sanivaaram", "Lucky Baskhar", "Guntur Kaaram", "Fidaa",
+      "Uppena", "Kushi", "Shyam Singha Roy", "Major", "Karthikeya"
+    ],
+    "south_movies": [
+      "KGF", "Kantara", "Vikram", "Leo", "Jailer", "Kaithi", "Master", "Ponniyin Selvan",
+      "Lucifer", "Manjummel Boys", "Aavesham", "777 Charlie", "Robot", "Sivaji", "Mersal",
+      "Enthiran", "Ghilli", "96", "Asuran", "Karnan", "Jai Bhim", "Soorarai Pottru",
+      "Vikram Vedha", "Thupakki", "Kaththi", "Petta", "Kabali", "Beast", "Varisu",
+      "Goat", "Premam", "Bangalore Days", "Drishyam", "Minnal Murali", "RDX", "Bramayugam",
+      "Ugramm", "Kabzaa", "Kurup", "Bheeshma Parvam", "24", "Anniyan", "Chandramukhi",
+      "Padayappa", "Baasha", "Mankatha", "Super Deluxe", "Maharaja", "Garudan", "Kanguva"
+    ],
+    "south_heroes": [
+      "Prabhas", "Mahesh Babu", "Allu Arjun", "Jr NTR", "Ram Charan", "Pawan Kalyan",
+      "Chiranjeevi", "Balakrishna", "Venkatesh", "Nagarjuna", "Thalapathy Vijay", "Ajith Kumar",
+      "Rajinikanth", "Kamal Haasan", "Suriya", "Dhanush", "Chiyaan Vikram", "Karthi",
+      "Sivakarthikeyan", "Silambarasan", "Vijay Sethupathi", "Rocking Star Yash", "Rishab Shetty",
+      "Rakshit Shetty", "Shiva Rajkumar", "Upendra", "Kichcha Sudeep", "Mohanlal",
+      "Mammootty", "Fahadh Faasil", "Dulquer Salmaan", "Prithviraj", "Tovino Thomas",
+      "Nivin Pauly", "Vijay Deverakonda", "Natural Star Nani", "Ravi Teja", "Ram Pothineni",
+      "Naga Chaitanya", "Akhil Akkineni", "Sai Dharam Tej", "Varun Tej", "Sharwanand",
+      "Adivi Sesh", "Siddhu Jonnalagadda", "Teja Sajja", "Naveen Polishetty", "Gopichand"
+    ],
+    "south_heroines": [
+      "Samantha", "Rashmika Mandanna", "Pooja Hegde", "Nayanthara", "Trisha Krishnan",
+      "Sai Pallavi", "Anushka Shetty", "Keerthy Suresh", "Tamannaah", "Kajal Aggarwal",
+      "Mrunal Thakur", "Krithi Shetty", "Sreeleela", "Raashii Khanna", "Shruti Haasan",
+      "Nithya Menen", "Nazriya Nazim", "Aishwarya Lekshmi", "Kalyani Priyadarshan",
+      "Meenakshi Chaudhary", "Anupama Parameswaran", "Nivetha Thomas", "Pranitha Subhash",
+      "Hansika Motwani", "Shriya Saran", "Ileana DCruz", "Genelia", "Priyamani",
+      "Asin", "Sneha", "Simran", "Soundarya", "Ramya Krishnan", "Ritu Varma",
+      "Priyanka Mohan", "Malavika Mohanan", "Nabha Natesh", "Dimple Hayathi",
+      "Faria Abdullah", "Ruhani Sharma", "Rukmini Vasanth", "Ashika Ranganath",
+      "Srinidhi Shetty", "Saptami Gowda", "Aparna Balamurali", "Anna Ben",
+      "Nimisha Sajayan", "Parvathy Thiruvothu", "Regina Cassandra"
     ]
   }
 }
-

@@ -829,18 +829,21 @@ export class VirtualServer {
     this.timeLeftSeconds = WORD_CHOICE_DURATION_SECONDS;
     this.totalTimeSeconds = WORD_CHOICE_DURATION_SECONDS;
 
-    // Emit word options
+    this.persistToStorage();
+    this.emitRoomState();
+
+    // Emit word options for drawer
     this.emit("game:word_options", {
+      drawerId: this.currentDrawerId,
       words: this.currentWordOptions,
       durationSeconds: WORD_CHOICE_DURATION_SECONDS,
     });
 
+    // Emit choosing announcement for non-drawers
     this.emit("game:drawer_choosing", {
+      drawerId: this.currentDrawerId,
       drawerName: drawer.nickname,
     });
-
-    this.persistToStorage();
-    this.emitRoomState();
 
     // If drawer is bot, auto-choose word
     if (this.currentDrawerId.startsWith("bot-")) {

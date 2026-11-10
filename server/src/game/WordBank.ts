@@ -17,6 +17,10 @@ export class WordBank {
       objects: ["guitar", "backpack", "clock", "camera", "chair", "telescope"],
       actions: ["swimming", "dancing", "cooking", "reading", "flying"],
       places: ["castle", "island", "forest", "volcano", "beach", "hospital"],
+      tollywood: ["Baahubali", "RRR", "Pushpa", "Magadheera", "Pokiri", "Eega", "Athadu", "Arjun Reddy", "Devara", "Kalki", "Salaar"],
+      south_movies: ["KGF", "Kantara", "Vikram", "Leo", "Jailer", "Kaithi", "Master", "Ponniyin Selvan", "Lucifer", "Manjummel Boys"],
+      south_heroes: ["Prabhas", "Mahesh Babu", "Allu Arjun", "Jr NTR", "Ram Charan", "Pawan Kalyan", "Chiranjeevi", "Vijay", "Rajinikanth", "Yash"],
+      south_heroines: ["Samantha", "Rashmika Mandanna", "Pooja Hegde", "Nayanthara", "Trisha", "Sai Pallavi", "Anushka Shetty", "Keerthy Suresh"],
     },
   };
 
@@ -40,15 +44,19 @@ export class WordBank {
       }
 
       if (!loaded) {
-        this.wordsData = {
-          categories: {
-            animals: ["cat", "dog", "elephant", "giraffe", "penguin", "lion", "tiger"],
-            food: ["pizza", "burger", "sushi", "taco", "pancake", "donut", "ice cream"],
-            objects: ["guitar", "backpack", "clock", "camera", "chair", "telescope"],
-            actions: ["swimming", "dancing", "cooking", "reading", "flying"],
-            places: ["castle", "island", "forest", "volcano", "beach", "hospital"],
-          },
-        };
+          this.wordsData = {
+            categories: {
+              animals: ["cat", "dog", "elephant", "giraffe", "penguin", "lion", "tiger"],
+              food: ["pizza", "burger", "sushi", "taco", "pancake", "donut", "ice cream"],
+              objects: ["guitar", "backpack", "clock", "camera", "chair", "telescope"],
+              actions: ["swimming", "dancing", "cooking", "reading", "flying"],
+              places: ["castle", "island", "forest", "volcano", "beach", "hospital"],
+              tollywood: ["Baahubali", "RRR", "Pushpa", "Magadheera", "Pokiri", "Eega", "Athadu", "Arjun Reddy", "Devara", "Kalki", "Salaar"],
+              south_movies: ["KGF", "Kantara", "Vikram", "Leo", "Jailer", "Kaithi", "Master", "Ponniyin Selvan", "Lucifer", "Manjummel Boys"],
+              south_heroes: ["Prabhas", "Mahesh Babu", "Allu Arjun", "Jr NTR", "Ram Charan", "Pawan Kalyan", "Chiranjeevi", "Vijay", "Rajinikanth", "Yash"],
+              south_heroines: ["Samantha", "Rashmika Mandanna", "Pooja Hegde", "Nayanthara", "Trisha", "Sai Pallavi", "Anushka Shetty", "Keerthy Suresh"],
+            },
+          };
       }
     } catch {
       this.wordsData = {

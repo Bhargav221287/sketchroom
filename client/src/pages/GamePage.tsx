@@ -326,43 +326,53 @@ export function GamePage() {
   // Render Word Hint Tiles
   const renderWordHintTiles = () => {
     if (isDrawer && secretWord) {
+      const words = secretWord.split(" ");
       return (
-        <div className="flex items-center gap-1.5 select-none">
-          {secretWord.split("").map((char, i) => (
-            <span
-              key={i}
-              className={`font-display font-bold text-lg md:text-xl uppercase px-2 py-1 rounded-xl border-2 ${
-                char === " " ? "w-4 border-transparent" : "border-primary bg-primary-light text-primary"
-              }`}
-            >
-              {char}
-            </span>
+        <div className="flex items-center gap-3 select-none flex-wrap justify-center">
+          {words.map((word, wIdx) => (
+            <div key={wIdx} className="flex items-center gap-1.5">
+              {word.split("").map((char, i) => (
+                <span
+                  key={i}
+                  className="font-display font-bold text-lg md:text-xl uppercase px-2 py-1 rounded-xl border-2 border-primary bg-primary-light text-primary"
+                >
+                  {char}
+                </span>
+              ))}
+            </div>
           ))}
         </div>
       );
     }
 
-    // Masked letter tiles for guessers with 3D flip animation
-    const hintTokens = (roomState.wordHint || "").split(" ");
+    // Masked letter tiles for guessers with word grouping
+    const wordsInHint = (roomState.wordHint || "").split("   ");
     return (
-      <div className="flex items-center gap-1.5 select-none flex-wrap justify-center">
-        {hintTokens.map((char, i) => {
-          const isRevealed = char !== "_";
+      <div className="flex items-center gap-3 select-none flex-wrap justify-center">
+        {wordsInHint.map((wordStr, wIdx) => {
+          const hintTokens = wordStr.split(" ").filter((c) => c.length > 0);
           return (
-            <span
-              key={i}
-              className={`font-display font-bold text-lg md:text-xl uppercase px-2 py-1 rounded-xl border-2 transition-transform duration-300 ${
-                isRevealed
-                  ? "border-primary bg-primary-light text-primary animate-flip-in"
-                  : "border-border bg-surface-2 text-text-muted min-w-[28px] text-center"
-              }`}
-            >
-              {char}
-            </span>
+            <div key={wIdx} className="flex items-center gap-1.5">
+              {hintTokens.map((char, i) => {
+                const isRevealed = char !== "_";
+                return (
+                  <span
+                    key={i}
+                    className={`font-display font-bold text-lg md:text-xl uppercase px-2 py-1 rounded-xl border-2 transition-transform duration-300 ${
+                      isRevealed
+                        ? "border-primary bg-primary-light text-primary animate-flip-in"
+                        : "border-border bg-surface-2 text-text-muted min-w-[28px] text-center"
+                    }`}
+                  >
+                    {char}
+                  </span>
+                );
+              })}
+            </div>
           );
         })}
         {roomState.wordLength && (
-          <span className="text-xs font-display font-bold bg-surface-3 text-text-muted px-2 py-0.5 rounded-full ml-1">
+          <span className="text-xs font-display font-bold bg-surface-3 text-text-muted px-2 py-0.5 rounded-full ml-1 self-center">
             {roomState.wordLength}
           </span>
         )}

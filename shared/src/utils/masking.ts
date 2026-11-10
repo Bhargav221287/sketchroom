@@ -11,10 +11,18 @@ export function createInitialWordHint(word: string): string {
 
 /**
  * Returns raw characters of the current hint as an array (without join spacing)
+ * Handles multi-word hints where words are separated by triple spaces.
  */
 export function hintToArray(hint: string): string[] {
-  // Hint has spaces between characters like "_ _ _ _"
-  return hint.split(" ");
+  if (!hint) return [];
+  const words = hint.split("   ");
+  const result: string[] = [];
+  words.forEach((w, idx) => {
+    if (idx > 0) result.push(" ");
+    const letters = w.split(" ");
+    result.push(...letters);
+  });
+  return result;
 }
 
 /**

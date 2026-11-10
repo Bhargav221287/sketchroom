@@ -149,11 +149,17 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
       sound.playPop();
     });
 
-    socket.on("game:word_options", ({ words }) => {
+    socket.on("game:word_options", ({ words, drawerId }: { words: [string, string, string]; drawerId?: string }) => {
+      if (drawerId && get().myPlayerId && drawerId !== get().myPlayerId) {
+        return;
+      }
       set({ wordOptions: words, drawerChoosingName: null, turnSummary: null });
     });
 
-    socket.on("game:drawer_choosing", ({ drawerName }) => {
+    socket.on("game:drawer_choosing", ({ drawerName, drawerId }: { drawerName: string; drawerId?: string }) => {
+      if (drawerId && get().myPlayerId && drawerId === get().myPlayerId) {
+        return; // Drawer does not clear their own word options!
+      }
       set({ drawerChoosingName: drawerName, wordOptions: null, turnSummary: null });
     });
 
